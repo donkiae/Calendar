@@ -149,6 +149,9 @@
   }
   .day-cell.weekend .day-num { color: var(--weekend); }
 
+  /* ── Pills wrapper ── */
+  .pills-box { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+
   /* ── Holiday pills (solid) ── */
   .holiday-pill {
     display: flex; align-items: center; gap: 4px;
@@ -214,19 +217,22 @@
     .day-grid {
       padding: 6px 6px 8px; gap: 2px;
       grid-template-rows: auto;
-      grid-auto-rows: 56px;
+      grid-auto-rows: 68px;
     }
     .day-header { font-size: 0.54rem; padding-bottom: 5px; letter-spacing: 0; }
 
-    /* Cells: grid-auto-rows handles height; just clip overflow */
-    .day-cell { min-height: 0; overflow: hidden; padding: 3px 2px 2px; }
+    /* Cells: fixed track height from grid-auto-rows; clip overflow */
+    .day-cell { min-height: 0 !important; overflow: hidden; padding: 3px 2px 2px; }
     .day-num  { font-size: 0.6rem; width: 17px; height: 17px; margin-bottom: 1px; }
 
-    /* Pills: code only, stacked — clipped after ~3 fit */
+    /* Pills box: horizontal wrap so chips sit side-by-side */
+    .pills-box { flex-direction: row; flex-wrap: wrap; gap: 2px; margin-top: 1px; }
+
+    /* Pills: square-ish chips, code only */
     .pill-name { display: none; }
-    .holiday-pill { padding: 1px 4px; gap: 0; margin-top: 1px; }
-    .econ-pill    { padding: 1px 4px 1px 5px; gap: 0; margin-top: 1px; border-left-width: 2px; }
-    .pill-code    { font-size: 0.53rem; }
+    .holiday-pill { padding: 2px 3px; margin-top: 0; }
+    .econ-pill    { padding: 2px 3px 2px 4px; margin-top: 0; border-left-width: 2px; }
+    .pill-code    { font-size: 0.52rem; line-height: 1; }
 
     .legend-row { gap: 4px 10px; }
     .legend-item { font-size: 0.67rem; gap: 4px; }
@@ -534,6 +540,11 @@ function render(map) {
       num.textContent = d;
       cell.appendChild(num);
 
+      // pills container (flex-wrap so chips sit side-by-side on mobile)
+      const pillsBox = document.createElement('div');
+      pillsBox.className = 'pills-box';
+      cell.appendChild(pillsBox);
+
       // holiday pills
       holidays.forEach(h => {
         const pill = document.createElement('div');
@@ -543,7 +554,7 @@ function render(map) {
           `<span class="pill-code" style="color:${h.color}">${h.code}</span>` +
           `<span class="pill-name" style="color:${h.color}">${h.name}</span>`;
         pill.title = `${h.name} (${h.code})`;
-        cell.appendChild(pill);
+        pillsBox.appendChild(pill);
       });
 
       // economic event pills (outlined style)
@@ -555,7 +566,7 @@ function render(map) {
           `<span class="pill-code">${e.code}</span>` +
           `<span class="pill-name">${e.name}${e.time ? ' · ' + e.time : ''}</span>`;
         pill.title = e.time ? `${e.name} · ${e.time}` : e.name;
-        cell.appendChild(pill);
+        pillsBox.appendChild(pill);
       });
 
       // tooltip
