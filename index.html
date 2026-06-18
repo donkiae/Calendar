@@ -397,7 +397,7 @@ function buildMap() {
   // economic events
   ECON_CATS.forEach(e => {
     if (!enabledEcon.has(e.code)) return;
-    const dates = (ECON_DATA[e.code] || {})[currentYear] || [];
+    const dates = (typeof ECON_DATA !== 'undefined' && ECON_DATA[e.code] || {})[currentYear] || [];
     dates.forEach(iso => {
       if (!map[iso]) map[iso] = { holidays:[], econ:[] };
       map[iso].econ.push({ code: e.code, name: e.name, color: e.color });
