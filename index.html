@@ -213,27 +213,19 @@
     .day-grid { padding: 6px 6px 8px; gap: 2px; }
     .day-header { font-size: 0.54rem; padding-bottom: 5px; letter-spacing: 0; }
 
-    /* Fixed height (not min-height) — prevents rows from expanding unevenly */
+    /* Fixed height — all rows identical, no overflow chaos */
     .day-cell {
-      height: 54px; min-height: unset;
+      height: 58px; min-height: unset;
       padding: 3px 2px 2px;
       overflow: hidden;
     }
-    .day-num { font-size: 0.58rem; width: 16px; height: 16px; margin-bottom: 2px; }
+    .day-num { font-size: 0.6rem; width: 17px; height: 17px; margin-bottom: 1px; }
 
-    /* Pills: no names, inline so they wrap horizontally instead of stacking */
+    /* Pills: hide name, show code only — stack vertically, clipped at cell bottom */
     .pill-name { display: none; }
-    .holiday-pill {
-      display: inline-flex; align-items: center;
-      padding: 1px 3px; margin: 0 1px 1px 0;
-      gap: 0; border-radius: 3px;
-    }
-    .econ-pill {
-      display: inline-flex; align-items: center;
-      padding: 1px 3px 1px 4px; margin: 0 1px 1px 0;
-      gap: 0; border-left-width: 2px; border-radius: 0 3px 3px 0;
-    }
-    .pill-code { font-size: 0.5rem; }
+    .holiday-pill { padding: 1px 4px; gap: 0; margin-top: 1px; }
+    .econ-pill    { padding: 1px 4px 1px 5px; gap: 0; margin-top: 1px; border-left-width: 2px; }
+    .pill-code    { font-size: 0.53rem; }
 
     .legend-row { gap: 4px 10px; }
     .legend-item { font-size: 0.67rem; gap: 4px; }
@@ -521,7 +513,6 @@ function render(map) {
       const cell = document.createElement('div');
       let cls = 'day-cell';
       if (dow===0||dow===6) cls += ' weekend';
-      if (iso === todayStr) cls += ' today';
       cell.className = cls;
 
       // background tint (holidays only, not econ)
