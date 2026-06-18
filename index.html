@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APAC Holiday Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #0F172A;
+    --ink-mid:   #475569;
+    --ink-soft:  #94A3B8;
+    --surface:   #FFFFFF;
+    --bg:        #F1F5F9;
+    --border:    #E2E8F0;
+    --weekend:   #EF4444;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 7px;
+    --shadow-card: 0 1px 3px rgba(15,23,42,0.05), 0 8px 24px rgba(15,23,42,0.06);
+    --shadow-sm:   0 1px 4px rgba(15,23,42,0.08);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── Banner ── */
+  .banner {
+    background: var(--ink);
+    color: #fff;
+    padding: 36px 32px 28px;
+    text-align: center;
+  }
+  .banner h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .banner .tagline { font-size: 0.8rem; font-weight: 500; color: #94A3B8; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(241,245,249,0.93);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+
+  .year-nav {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 40px; padding: 4px 6px; box-shadow: var(--shadow-sm);
+  }
+  .year-nav button {
+    width: 32px; height: 32px; border: none; border-radius: 50%;
+    cursor: pointer; background: transparent;
+    font-size: 0.7rem; color: var(--ink-mid);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .year-nav button:hover { background: var(--ink); color: #fff; }
+  .year-input {
+    border: none; background: transparent; font-family: inherit;
+    font-size: 1rem; font-weight: 700; width: 64px;
+    text-align: center; color: var(--ink); outline: none;
+  }
+  .year-input::-webkit-inner-spin-button,
+  .year-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* ── Legend rows ── */
+  .legend-row {
+    display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: center; align-items: center;
+  }
+  .legend-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600; color: var(--ink-mid);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-bar { width: 14px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center;
+  }
+  .filter-sep {
+    width: 1px; height: 20px; background: var(--border); margin: 0 4px; flex-shrink: 0;
+  }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.72rem; font-weight: 600; cursor: pointer;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 4px 10px; color: var(--ink-mid);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .filter-chip:has(input:checked) {
+    border-color: var(--chip-color, var(--ink));
+    color: var(--chip-color, var(--ink));
+    background: color-mix(in srgb, var(--chip-color, var(--ink)) 8%, white);
+  }
+  .filter-chip input { display: none; }
+  .chip-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--chip-color, var(--ink)); opacity: 0.35;
+    transition: opacity 0.15s;
+  }
+  .filter-chip:has(input:checked) .chip-dot { opacity: 1; }
+
+  /* ── Page body ── */
+  .page-body { padding: 32px 32px 64px; max-width: 1140px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Month card ── */
+  .month-card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+  .month-header {
+    padding: 16px 22px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .month-name { font-size: 1rem; font-weight: 800; color: var(--ink); text-transform: uppercase; letter-spacing: 0.08em; }
+  .month-year-badge { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); }
+
+  /* ── Day grid ── */
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 12px 14px 16px; gap: 4px; }
+  .day-header { text-align: center; font-size: 0.65rem; font-weight: 700; color: var(--ink-soft); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .day-header.sun, .day-header.sat { color: #FCA5A5; }
+
+  /* ── Day cell ── */
+  .day-cell {
+    min-height: 88px; border-radius: var(--radius-sm); padding: 6px 5px 5px;
+    position: relative; overflow: visible; transition: background 0.12s;
+  }
+  .day-cell:not(.other-month):hover { background: #F8FAFC; }
+  .day-cell.other-month { visibility: hidden; }
+
+  .day-num {
+    font-size: 0.7rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 4px;
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  }
+  .day-cell.weekend .day-num { color: var(--weekend); }
+  .day-cell.today .day-num { background: var(--ink); color: #fff; }
+
+  /* ── Holiday pills (solid) ── */
+  .holiday-pill {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 2px; border-radius: 5px; padding: 2px 5px 2px 4px;
+    overflow: hidden; cursor: default;
+  }
+  .pill-code { font-size: 0.55rem; font-weight: 800; flex-shrink: 0; letter-spacing: 0.02em; opacity: 0.85; }
+  .pill-name { font-size: 0.58rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; flex: 1; min-width: 0; }
+
+  /* ── Economic event pills (outlined / left-bar style) ── */
+  .econ-pill {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 2px; padding: 2px 5px 2px 5px;
+    overflow: hidden; cursor: default;
+    border-radius: 0 5px 5px 0;
+    border-left: 3px solid var(--econ-color, #333);
+    background: color-mix(in srgb, var(--econ-color, #333) 10%, white);
+  }
+  .econ-pill .pill-code { color: var(--econ-color, #333); opacity: 1; font-style: italic; }
+  .econ-pill .pill-name { color: var(--econ-color, #333); font-weight: 700; }
+
+  /* ── Tooltip ── */
+  .day-cell:hover .tooltip { display: block; }
+  .tooltip {
+    display: none; position: absolute; z-index: 300;
+    top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white; font-size: 0.72rem;
+    padding: 10px 14px; border-radius: var(--radius-md);
+    white-space: nowrap; box-shadow: 0 8px 32px rgba(15,23,42,0.28);
+    pointer-events: none; min-width: 160px; line-height: 1.8;
+  }
+  .tooltip::before {
+    content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-bottom-color: var(--ink);
+  }
+  .tooltip-row { display: flex; align-items: center; gap: 7px; }
+  .tooltip-flag { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── Status ── */
+  .status-msg { text-align: center; padding: 80px 20px; color: var(--ink-soft); font-size: 0.9rem; font-weight: 500; }
+  .status-msg.error { color: #EF4444; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>APAC Holiday Calendar</h1>
+</div>
+
+<div class="toolbar">
+  <div class="year-nav">
+    <button id="prevBtn">&#9664;</button>
+    <input type="number" class="year-input" id="yearInput" min="2025" max="2100">
+    <button id="nextBtn">&#9654;</button>
+  </div>
+  <div class="legend-row" id="legend"></div>
+  <div class="legend-row" id="econLegend"></div>
+  <div class="filter-bar" id="filterBar"></div>
+</div>
+
+<div class="page-body" id="calendar">
+  <div class="status-msg">Loading&hellip;</div>
+</div>
+
+<!-- Asian holiday data scraped from publicholidays.asia -->
+<script src="holidays_data.js"></script>
+
+<!-- US holidays (hardcoded — update annually) -->
+<script>
+if (typeof EMBEDDED_HOLIDAYS !== 'undefined') {
+  EMBEDDED_HOLIDAYS.US = {
+    2025: [
+      {date:"2025-01-01",name:"New Year's Day"},
+      {date:"2025-01-20",name:"MLK Day / Inauguration"},
+      {date:"2025-02-17",name:"Presidents' Day"},
+      {date:"2025-05-26",name:"Memorial Day"},
+      {date:"2025-06-19",name:"Juneteenth"},
+      {date:"2025-07-04",name:"Independence Day"},
+      {date:"2025-09-01",name:"Labor Day"},
+      {date:"2025-10-13",name:"Columbus Day"},
+      {date:"2025-11-11",name:"Veterans Day"},
+      {date:"2025-11-27",name:"Thanksgiving"},
+      {date:"2025-12-25",name:"Christmas Day"},
+    ],
+    2026: [
+      {date:"2026-01-01",name:"New Year's Day"},
+      {date:"2026-01-19",name:"MLK Day"},
+      {date:"2026-02-16",name:"Presidents' Day"},
+      {date:"2026-05-25",name:"Memorial Day"},
+      {date:"2026-06-19",name:"Juneteenth"},
+      {date:"2026-07-03",name:"Independence Day (obs.)"},
+      {date:"2026-09-07",name:"Labor Day"},
+      {date:"2026-10-12",name:"Columbus Day"},
+      {date:"2026-11-11",name:"Veterans Day"},
+      {date:"2026-11-26",name:"Thanksgiving"},
+      {date:"2026-12-25",name:"Christmas Day"},
+    ],
+    2027: [
+      {date:"2027-01-01",name:"New Year's Day"},
+      {date:"2027-01-18",name:"MLK Day"},
+      {date:"2027-02-15",name:"Presidents' Day"},
+      {date:"2027-05-31",name:"Memorial Day"},
+      {date:"2027-06-18",name:"Juneteenth (obs.)"},
+      {date:"2027-07-05",name:"Independence Day (obs.)"},
+      {date:"2027-09-06",name:"Labor Day"},
+      {date:"2027-10-11",name:"Columbus Day"},
+      {date:"2027-11-11",name:"Veterans Day"},
+      {date:"2027-11-25",name:"Thanksgiving"},
+      {date:"2027-12-24",name:"Christmas Day (obs.)"},
+    ],
+  };
+}
+</script>
+
+<!-- Economic event dates — generated by scrape_econ_events.py -->
+<script src="econ_data.js"></script>
+
+<script>
+/* ── Country config ── */
+const COUNTRIES = [
+  { code:'SG', name:'Singapore',    color:'#EF3340' },
+  { code:'MY', name:'Malaysia',     color:'#003478' },
+  { code:'ID', name:'Indonesia',    color:'#CE1126' },
+  { code:'IN', name:'India',        color:'#FF9933' },
+  { code:'JP', name:'Japan',        color:'#BC002D' },
+  { code:'VN', name:'Vietnam',      color:'#D4A017' },
+  { code:'TH', name:'Thailand',     color:'#2D2A4A' },
+  { code:'PH', name:'Philippines',  color:'#0038A8' },
+  { code:'US', name:'United States',color:'#3B5BDB' },
+];
+
+/* ── Economic event config ── */
+const ECON_CATS = [
+  { code:'FOMC', name:'FOMC Decision', color:'#1E40AF' },
+  { code:'CPI',  name:'US CPI',        color:'#6D28D9' },
+  { code:'NFP',  name:'US Payrolls',   color:'#065F46' },
+  { code:'GDP',  name:'US GDP (adv.)', color:'#92400E' },
+];
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let currentYear = Math.max(new Date().getFullYear(), 2025);
+let cache       = {};
+let enabled     = new Set(COUNTRIES.map(c => c.code));
+let enabledEcon = new Set(ECON_CATS.map(e => e.code));
+
+/* ── Legend — countries ── */
+const legendEl = document.getElementById('legend');
+legendEl.insertAdjacentHTML('beforeend', '<span class="legend-label">Holidays</span>');
+COUNTRIES.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'legend-item';
+  el.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div><span>${c.name}</span>`;
+  legendEl.appendChild(el);
+});
+
+/* ── Legend — econ events ── */
+const econLegendEl = document.getElementById('econLegend');
+econLegendEl.insertAdjacentHTML('beforeend', '<span class="legend-label">US Events</span>');
+ECON_CATS.forEach(e => {
+  const el = document.createElement('div');
+  el.className = 'legend-item';
+  el.innerHTML =
+    `<div class="legend-bar" style="background:color-mix(in srgb,${e.color} 15%,white);border-left:3px solid ${e.color}"></div>` +
+    `<span style="color:${e.color};font-weight:700">${e.code}</span><span style="color:var(--ink-mid)">${e.name}</span>`;
+  econLegendEl.appendChild(el);
+});
+
+/* ── Filter chips — countries ── */
+const filterBarEl = document.getElementById('filterBar');
+COUNTRIES.forEach(c => {
+  const lbl = document.createElement('label');
+  lbl.className = 'filter-chip';
+  lbl.style.setProperty('--chip-color', c.color);
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = true;
+  cb.addEventListener('change', () => { cb.checked ? enabled.add(c.code) : enabled.delete(c.code); render(buildMap()); });
+  lbl.appendChild(cb);
+  lbl.insertAdjacentHTML('beforeend', `<span class="chip-dot"></span><span>${c.code}</span>`);
+  filterBarEl.appendChild(lbl);
+});
+
+/* separator */
+const sep = document.createElement('div');
+sep.className = 'filter-sep';
+filterBarEl.appendChild(sep);
+
+/* ── Filter chips — econ ── */
+ECON_CATS.forEach(e => {
+  const lbl = document.createElement('label');
+  lbl.className = 'filter-chip';
+  lbl.style.setProperty('--chip-color', e.color);
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = true;
+  cb.addEventListener('change', () => { cb.checked ? enabledEcon.add(e.code) : enabledEcon.delete(e.code); render(buildMap()); });
+  lbl.appendChild(cb);
+  lbl.insertAdjacentHTML('beforeend', `<span class="chip-dot"></span><span>${e.code}</span>`);
+  filterBarEl.appendChild(lbl);
+});
+
+/* ── Year nav ── */
+const yearEl  = document.getElementById('yearInput');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+yearEl.value  = currentYear;
+
+function updateNavState() {
+  prevBtn.disabled      = currentYear <= 2025;
+  prevBtn.style.opacity = currentYear <= 2025 ? '0.3' : '1';
+  prevBtn.style.cursor  = currentYear <= 2025 ? 'default' : 'pointer';
+}
+function goYear(y) {
+  y = parseInt(y);
+  if (isNaN(y) || y < 2025 || y > 2100) return;
+  currentYear = y; yearEl.value = y;
+  updateNavState(); render(buildMap());
+}
+prevBtn.addEventListener('click', () => goYear(currentYear - 1));
+nextBtn.addEventListener('click', () => goYear(currentYear + 1));
+yearEl.addEventListener('change',  () => goYear(yearEl.value));
+yearEl.addEventListener('keydown', e => e.key === 'Enter' && goYear(yearEl.value));
+updateNavState();
+
+/* ── Data helpers ── */
+function getHolidays(year, code) {
+  const k = `${year}-${code}`;
+  if (cache[k]) return cache[k];
+  const d = typeof EMBEDDED_HOLIDAYS !== 'undefined' && EMBEDDED_HOLIDAYS[code];
+  cache[k] = (d && d[year]) ? d[year].slice() : [];
+  return cache[k];
+}
+
+function buildMap() {
+  const map = {};
+
+  // holidays (APAC + US)
+  COUNTRIES.forEach(c => {
+    if (!enabled.has(c.code)) return;
+    getHolidays(currentYear, c.code).forEach(h => {
+      (map[h.date] = map[h.date] || { holidays:[], econ:[] })
+        .holidays.push({ name: h.name, code: c.code, color: c.color });
+    });
+  });
+
+  // economic events
+  ECON_CATS.forEach(e => {
+    if (!enabledEcon.has(e.code)) return;
+    const dates = (ECON_DATA[e.code] || {})[currentYear] || [];
+    dates.forEach(iso => {
+      if (!map[iso]) map[iso] = { holidays:[], econ:[] };
+      map[iso].econ.push({ code: e.code, name: e.name, color: e.color });
+    });
+  });
+
+  return map;
+}
+
+/* ── Colour utils ── */
+function hexAlpha(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ── Render ── */
+function render(map) {
+  const calEl = document.getElementById('calendar');
+  calEl.innerHTML = '';
+
+  if (typeof EMBEDDED_HOLIDAYS === 'undefined') {
+    calEl.innerHTML = '<div class="status-msg error">holidays_data.js not found — run scrape_holidays.py to generate it.</div>';
+    return;
+  }
+
+  const today    = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  for (let m = 0; m < 12; m++) {
+    const card = document.createElement('div');
+    card.className = 'month-card';
+
+    // header
+    const header = document.createElement('div');
+    header.className = 'month-header';
+    header.innerHTML =
+      `<span class="month-name">${MONTHS[m]}</span>` +
+      `<span class="month-year-badge">${currentYear}</span>`;
+    card.appendChild(header);
+
+    // grid
+    const grid = document.createElement('div');
+    grid.className = 'day-grid';
+    DAYS.forEach((d, i) => {
+      const hdr = document.createElement('div');
+      hdr.className = 'day-header' + (i===0?' sun':i===6?' sat':'');
+      hdr.textContent = d;
+      grid.appendChild(hdr);
+    });
+
+    const firstDow = new Date(currentYear, m, 1).getDay();
+    const daysInMo = new Date(currentYear, m+1, 0).getDate();
+
+    for (let i = 0; i < firstDow; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'day-cell other-month';
+      grid.appendChild(blank);
+    }
+
+    for (let d = 1; d <= daysInMo; d++) {
+      const iso      = `${currentYear}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dow      = new Date(currentYear, m, d).getDay();
+      const dayData  = map[iso] || { holidays:[], econ:[] };
+      const holidays = dayData.holidays;
+      const econEvts = dayData.econ;
+      const allEvts  = holidays.length + econEvts.length;
+
+      const cell = document.createElement('div');
+      let cls = 'day-cell';
+      if (dow===0||dow===6) cls += ' weekend';
+      if (iso === todayStr) cls += ' today';
+      cell.className = cls;
+
+      // background tint (holidays only, not econ)
+      if (holidays.length === 1) {
+        cell.style.background = hexAlpha(holidays[0].color, 0.07);
+      } else if (holidays.length > 1) {
+        const sz = 100 / holidays.length;
+        const stops = holidays.flatMap((h,i) => [
+          `${hexAlpha(h.color,0.08)} ${Math.round(i*sz)}%`,
+          `${hexAlpha(h.color,0.08)} ${Math.round((i+1)*sz)}%`,
+        ]).join(',');
+        cell.style.background = `linear-gradient(160deg,${stops})`;
+      }
+
+      // day number
+      const num = document.createElement('div');
+      num.className = 'day-num';
+      num.textContent = d;
+      cell.appendChild(num);
+
+      // holiday pills
+      holidays.forEach(h => {
+        const pill = document.createElement('div');
+        pill.className = 'holiday-pill';
+        pill.style.background = hexAlpha(h.color, 0.15);
+        pill.innerHTML =
+          `<span class="pill-code" style="color:${h.color}">${h.code}</span>` +
+          `<span class="pill-name" style="color:${h.color}">${h.name}</span>`;
+        pill.title = `${h.name} (${h.code})`;
+        cell.appendChild(pill);
+      });
+
+      // economic event pills (outlined style)
+      econEvts.forEach(e => {
+        const pill = document.createElement('div');
+        pill.className = 'econ-pill';
+        pill.style.setProperty('--econ-color', e.color);
+        pill.innerHTML =
+          `<span class="pill-code">${e.code}</span>` +
+          `<span class="pill-name">${e.name}</span>`;
+        pill.title = e.name;
+        cell.appendChild(pill);
+      });
+
+      // tooltip
+      if (allEvts > 0) {
+        const tip = document.createElement('div');
+        tip.className = 'tooltip';
+        tip.innerHTML = [
+          ...holidays.map(h =>
+            `<div class="tooltip-row"><div class="tooltip-flag" style="background:${h.color}"></div>` +
+            `<span style="color:${h.color};font-weight:800">${h.code}</span><span>${h.name}</span></div>`),
+          ...econEvts.map(e =>
+            `<div class="tooltip-row"><div class="tooltip-flag" style="background:${e.color};border-radius:2px"></div>` +
+            `<span style="color:${e.color};font-weight:800;font-style:italic">${e.code}</span><span>${e.name}</span></div>`),
+        ].join('');
+        cell.appendChild(tip);
+      }
+
+      grid.appendChild(cell);
+    }
+
+    card.appendChild(grid);
+    calEl.appendChild(card);
+  }
+}
+
+render(buildMap());
+</script>
+</body>
+</html>
