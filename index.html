@@ -206,29 +206,41 @@
 
     .toolbar { padding: 10px 12px; gap: 8px; }
 
-    .page-body { padding: 12px 8px 48px; gap: 12px; }
+    .page-body { padding: 12px 6px 48px; gap: 12px; }
 
     .month-header { padding: 10px 12px 8px; }
     .month-name { font-size: 0.85rem; }
 
-    .day-grid { padding: 8px 8px 10px; gap: 2px; }
-    .day-header { font-size: 0.58rem; padding-bottom: 6px; letter-spacing: 0; }
+    .day-grid { padding: 6px 6px 8px; gap: 2px; }
+    .day-header { font-size: 0.54rem; padding-bottom: 5px; letter-spacing: 0; }
 
-    /* Cells: clip content, tighter sizing */
-    .day-cell { min-height: 60px; padding: 4px 3px 3px; overflow: hidden; }
-    .day-num  { font-size: 0.63rem; width: 18px; height: 18px; margin-bottom: 2px; }
+    /* Fixed height (not min-height) — prevents rows from expanding unevenly */
+    .day-cell {
+      height: 54px; min-height: unset;
+      padding: 3px 2px 2px;
+      overflow: hidden;
+    }
+    .day-num { font-size: 0.58rem; width: 16px; height: 16px; margin-bottom: 2px; }
 
-    /* Pills: hide name on mobile — show only the code badge */
+    /* Pills: no names, inline so they wrap horizontally instead of stacking */
     .pill-name { display: none; }
-    .holiday-pill { padding: 2px 4px; gap: 0; margin-top: 1px; border-radius: 4px; }
-    .econ-pill    { padding: 2px 4px 2px 5px; gap: 0; margin-top: 1px; }
-    .pill-code    { font-size: 0.56rem; opacity: 1; }
+    .holiday-pill {
+      display: inline-flex; align-items: center;
+      padding: 1px 3px; margin: 0 1px 1px 0;
+      gap: 0; border-radius: 3px;
+    }
+    .econ-pill {
+      display: inline-flex; align-items: center;
+      padding: 1px 3px 1px 4px; margin: 0 1px 1px 0;
+      gap: 0; border-left-width: 2px; border-radius: 0 3px 3px 0;
+    }
+    .pill-code { font-size: 0.5rem; }
 
-    .legend-row { gap: 4px 12px; }
-    .legend-item { font-size: 0.68rem; gap: 4px; }
+    .legend-row { gap: 4px 10px; }
+    .legend-item { font-size: 0.67rem; gap: 4px; }
     .legend-dot  { width: 8px; height: 8px; }
 
-    .filter-chip { padding: 3px 8px; font-size: 0.68rem; }
+    .filter-chip { padding: 3px 8px; font-size: 0.67rem; }
   }
 </style>
 </head>
