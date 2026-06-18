@@ -210,18 +210,19 @@
     .month-header { padding: 10px 12px 8px; }
     .month-name { font-size: 0.85rem; }
 
-    .day-grid { padding: 6px 6px 8px; gap: 2px; }
+    /* grid-template-rows: first row = header (auto), rest = fixed 56px week rows */
+    .day-grid {
+      padding: 6px 6px 8px; gap: 2px;
+      grid-template-rows: auto;
+      grid-auto-rows: 56px;
+    }
     .day-header { font-size: 0.54rem; padding-bottom: 5px; letter-spacing: 0; }
 
-    /* Fixed height — all rows identical, no overflow chaos */
-    .day-cell {
-      height: 58px; min-height: unset;
-      padding: 3px 2px 2px;
-      overflow: hidden;
-    }
-    .day-num { font-size: 0.6rem; width: 17px; height: 17px; margin-bottom: 1px; }
+    /* Cells: grid-auto-rows handles height; just clip overflow */
+    .day-cell { min-height: 0; overflow: hidden; padding: 3px 2px 2px; }
+    .day-num  { font-size: 0.6rem; width: 17px; height: 17px; margin-bottom: 1px; }
 
-    /* Pills: hide name, show code only — stack vertically, clipped at cell bottom */
+    /* Pills: code only, stacked — clipped after ~3 fit */
     .pill-name { display: none; }
     .holiday-pill { padding: 1px 4px; gap: 0; margin-top: 1px; }
     .econ-pill    { padding: 1px 4px 1px 5px; gap: 0; margin-top: 1px; border-left-width: 2px; }
