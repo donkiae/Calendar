@@ -160,6 +160,9 @@
   }
   .pill-code { font-size: 0.55rem; font-weight: 800; flex-shrink: 0; letter-spacing: 0.02em; opacity: 0.85; }
   .pill-name { font-size: 0.58rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; flex: 1; min-width: 0; }
+  .all-pill { background: #FFF3CD; }
+  .all-pill .pill-code { color: #92400E; opacity: 1; }
+  .all-pill .pill-name { color: #92400E; }
 
   /* ── Economic event pills (outlined / left-bar style) ── */
   .econ-pill {
@@ -545,17 +548,30 @@ function render(map) {
       pillsBox.className = 'pills-box';
       cell.appendChild(pillsBox);
 
-      // holiday pills
-      holidays.forEach(h => {
+      // holiday pills — collapse to "ALL" if every enabled country has a holiday today
+      const enabledWithHoliday = new Set(holidays.map(h => h.code));
+      const isAllCountries = enabled.size > 1 && [...enabled].every(c => enabledWithHoliday.has(c));
+
+      if (isAllCountries) {
         const pill = document.createElement('div');
-        pill.className = 'holiday-pill';
-        pill.style.background = hexAlpha(h.color, 0.15);
+        pill.className = 'holiday-pill all-pill';
         pill.innerHTML =
-          `<span class="pill-code" style="color:${h.color}">${h.code}</span>` +
-          `<span class="pill-name" style="color:${h.color}">${h.name}</span>`;
-        pill.title = `${h.name} (${h.code})`;
+          `<span class="pill-code">ALL</span>` +
+          `<span class="pill-name">All Countries</span>`;
+        pill.title = holidays.map(h => `${h.code}: ${h.name}`).join('\n');
         pillsBox.appendChild(pill);
-      });
+      } else {
+        holidays.forEach(h => {
+          const pill = document.createElement('div');
+          pill.className = 'holiday-pill';
+          pill.style.background = hexAlpha(h.color, 0.15);
+          pill.innerHTML =
+            `<span class="pill-code" style="color:${h.color}">${h.code}</span>` +
+            `<span class="pill-name" style="color:${h.color}">${h.name}</span>`;
+          pill.title = `${h.name} (${h.code})`;
+          pillsBox.appendChild(pill);
+        });
+      }
 
       // economic event pills (outlined style)
       econEvts.forEach(e => {
